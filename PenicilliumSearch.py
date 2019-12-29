@@ -1,5 +1,8 @@
+from __future__ import print_function
+
 from Bio import SeqIO
 import sys
+import json
 
 
 #
@@ -71,6 +74,8 @@ max_hamming_distance = 3
 
 genes_found_dictionary = {}
 
+details_file = open('PenicilliumSearchDetails.txt', 'w')
+
 for chromosome_key, chromosome_value in chromosomes_dictionary.items():
     for gene_key, gene_value in genes_dictionary.items():
         occurrences = naive_approximate(gene_value, chromosome_value, max_hamming_distance)
@@ -79,6 +84,8 @@ for chromosome_key, chromosome_value in chromosomes_dictionary.items():
             genes_found_dictionary[gene_key] = location
             print('found gene {} in chromosome {} at location {} with {} differences'.format(
                 gene_key, chromosome_key, location, num_differences))
+            print('found gene {} in chromosome {} at location {} with {} differences'.format(
+                gene_key, chromosome_key, location, num_differences), file=details_file)
 
 # for any protein not matched, its possible that there was a shift (insertion or deletion)
 # that caused the hamming distance algorithm to fail
@@ -89,7 +96,10 @@ for gene_key, gene_value in genes_dictionary.items():
         genes_not_found_list.append(gene_key)
 
 print('Genes not found {}'.format(genes_not_found_list))
+print('Genes not found {}'.format(genes_not_found_list), file=details_file)
+
 print('Attempting to run hamming distance on shorter substrings')
+print('Attempting to run hamming distance on shorter substrings', file=details_file)
 
 max_allowed_parts_mismatch_percent = 2
 
@@ -97,6 +107,8 @@ max_allowed_parts_mismatch_percent = 2
 for chromosome_key, chromosome_value in chromosomes_dictionary.items():
     for gene_key, gene_value in genes_dictionary.items():
         if gene_key in genes_not_found_list:
+            parts_matched = []
+            parts_not_matched = []
             gene_part_values = protein_parts(gene_value)
             max_allowed_parts_mismatch = int(len(gene_part_values) * 1.0 * max_allowed_parts_mismatch_percent) / 100.0
             parts_mismatch_count = 0
@@ -121,6 +133,23 @@ for chromosome_key, chromosome_value in chromosomes_dictionary.items():
                     # gene_part_value,
                     # chromosome_key))
                     parts_mismatch_count += 1
+                    parts_not_matched.append(gene_part_value)
+                else:
+                    parts_matched.append(gene_part_value)
             if parts_mismatch_count <= max_allowed_parts_mismatch:
                 print('found gene {} in chromosome {} at location {} within mismatch percent of {}'.format(
                     gene_key, chromosome_key, min_location, max_allowed_parts_mismatch_percent))
+                print('found gene {} in chromosome {} at location {} within mismatch percent of {}'.format(
+                    gene_key, chromosome_key, min_location, max_allowed_parts_mismatch_percent), file=details_file)
+                print('***SUMMARY**')
+                print('parts_matched count={} parts_not_matched count={}'.format(
+                    len(parts_matched), len(parts_not_matched)))
+                print('parts_matched count={} parts_not_matched count={}'.format(
+                    len(parts_matched), len(parts_not_matched)), file=details_file)
+                print('***DETAILS are in PenicilliumSearchDetails.txt**')
+                print('PARTS NOT MATCHED', file=details_file)
+                print(json.dumps(parts_not_matched), file=details_file)
+                print('PARTS MATCHED', file=details_file)
+                print(json.dumps(parts_matched), file=details_file)
+
+details_file.close()
