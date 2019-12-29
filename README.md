@@ -21,3 +21,8 @@
 |--|----|--|
 |BioIO|https://github.com/biopython/biopython|https://biopython.org/wiki/SeqIO|
 
+## Referenced Algorithms
+|Algorithm|Wiki|
+|--|--|
+|Hamming Distance|https://en.wikipedia.org/wiki/Hamming_distance|
+|Levenshtein Distance|https://en.wikipedia.org/wiki/Levenshtein_distance#Recursive|
