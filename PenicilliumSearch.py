@@ -106,6 +106,7 @@ max_allowed_parts_mismatch_percent = 2
 # attempt to run hamming distance on a shorter substrings
 for chromosome_key, chromosome_value in chromosomes_dictionary.items():
     for gene_key, gene_value in genes_dictionary.items():
+        overall_mismatch = 0
         if gene_key in genes_not_found_list:
             parts_matched = []
             parts_not_matched = []
@@ -123,6 +124,7 @@ for chromosome_key, chromosome_value in chromosomes_dictionary.items():
                     location, num_differences = occurrence
                     location = location + search_start_index
                     min_occurrence_location = min(min_occurrence_location, location)
+                    overall_mismatch += num_differences
                     # print('**debug** found part_value {} in chromosome {} at location {}'.format(gene_part_value,
                     #                                                                              chromosome_key,
                     #                                                                              location))
@@ -137,6 +139,7 @@ for chromosome_key, chromosome_value in chromosomes_dictionary.items():
                 else:
                     parts_matched.append(gene_part_value)
             if parts_mismatch_count <= max_allowed_parts_mismatch:
+                mismatch_percent = ((100.0 * overall_mismatch)+(len(parts_not_matched)*10))/len(gene_value)
                 print('found gene {} in chromosome {} at location {} within mismatch percent of {}'.format(
                     gene_key, chromosome_key, min_location, max_allowed_parts_mismatch_percent))
                 print('found gene {} in chromosome {} at location {} within mismatch percent of {}'.format(
@@ -151,5 +154,7 @@ for chromosome_key, chromosome_value in chromosomes_dictionary.items():
                 print(json.dumps(parts_not_matched), file=details_file)
                 print('PARTS MATCHED', file=details_file)
                 print(json.dumps(parts_matched), file=details_file)
+                print('MISMATCH PERCENT {}'.format(mismatch_percent))
+                print('MISMATCH PERCENT {}'.format(mismatch_percent), file=details_file)
 
 details_file.close()
